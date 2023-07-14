@@ -1,15 +1,17 @@
-import { HooksObject, HookContext } from '@feathersjs/feathers';
-import  {validateResult}  from './result.joi';
+import { authenticate } from '@feathersjs/authentication';
 
-const hooks: HooksObject = {
+import { validateResult, validateResultData, validateResultPatch } from './result.joi';
+
+
+export default {
   before: {
     all: [],
-    find: [],
-    get: [],
-    create: [validateResult], // Add the validation hook to the 'create' method
-    update: [],
-    patch: [],
-    remove: []
+    find: [authenticate('jwt')],
+    get: [authenticate('jwt')],
+    create: [validateResult],
+    update: [validateResultData],
+    patch: [validateResultPatch],
+    remove: [authenticate('jwt')],
   },
 
   after: {
@@ -19,7 +21,7 @@ const hooks: HooksObject = {
     create: [],
     update: [],
     patch: [],
-    remove: []
+    remove: [],
   },
 
   error: {
@@ -29,8 +31,6 @@ const hooks: HooksObject = {
     create: [],
     update: [],
     patch: [],
-    remove: []
-  }
-};
-
-export default hooks;
+    remove: [],
+  },
+}
