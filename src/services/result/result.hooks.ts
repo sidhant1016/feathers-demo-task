@@ -1,11 +1,12 @@
-import { HooksObject } from '@feathersjs/feathers';
+import { HooksObject, HookContext } from '@feathersjs/feathers';
+import  {validateResult}  from './result.joi';
 
-export default {
+const hooks: HooksObject = {
   before: {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [validateResult], // Add the validation hook to the 'create' method
     update: [],
     patch: [],
     remove: []
@@ -31,3 +32,5 @@ export default {
     remove: []
   }
 };
+
+export default hooks;
