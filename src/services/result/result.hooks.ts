@@ -7,7 +7,7 @@ export default {
   before: {
     all: [],
     find: [authenticate('jwt'),getResultSchema,joiReadOptions],
-    get: [authenticate('jwt')],
+    get: [authenticate('jwt'),getResultSchema,joiReadOptions],
     create: [validateResult,joiOptions],
     update: [validateResultData],
     patch: [validateResultPatch],
