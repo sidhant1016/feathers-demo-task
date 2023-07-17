@@ -1,15 +1,35 @@
-import Joi from 'joi';
+import Joi, { ValidationResult } from 'joi';
 import { HookContext } from '@feathersjs/feathers';
 import { BadRequest } from '@feathersjs/errors';
 
-const UserSchema = Joi.object({
+ export const UserSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
-export  const validateUser = (context: HookContext) => {
-  const { data } = context;
+ export const joiOptions = { convert: true, abortEarly: false };
 
-  const { error } = UserSchema.validate(data);
+export const getUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+  username: Joi.string().alphanum().min(3).max(30).required(),
+  isAdmin: Joi.boolean().optional(),
+});
+
+
+export const joiReadOptions = {
+  getContext(context:any) {
+    // For example, if you want to get data from the 'query' object in Feathers
+    return context.params?.query || {};
+  },
+  setContext(context:any, newValues:any) {
+    // For example, if you want to assign new values to the 'query' object in Feathers
+    Object.assign(context.params, { query: { ...context.params.query, ...newValues } });
+  },
+};
+
+export const validateUser = (context: HookContext) => {
+  const { data } = context;
+  const { error }: ValidationResult = UserSchema.validate(data, joiReadOptions.getContext(context));
 
   if (error) {
     throw new BadRequest(error.details[0].message);
@@ -17,10 +37,10 @@ export  const validateUser = (context: HookContext) => {
 
   return context;
 };
+
 export const validateUserData = (context: HookContext) => {
   const { data } = context;
-
-  const { error } = UserSchema.validate(data);
+  const { error }: ValidationResult = UserSchema.validate(data, joiReadOptions.getContext(context));
 
   if (error) {
     throw new BadRequest(error.details[0].message);
@@ -28,10 +48,13 @@ export const validateUserData = (context: HookContext) => {
 
   return context;
 };
+
 export const validateUserPatch = (context: HookContext) => {
   const { data } = context;
-
-  const { error } = UserSchema.validate(data, { allowUnknown: true });
+  const { error }: ValidationResult = UserSchema.validate(data, {
+    ...joiReadOptions.getContext(context),
+    allowUnknown: true,
+  });
 
   if (error) {
     throw new BadRequest(error.details[0].message);
@@ -42,4 +65,11 @@ export const validateUserPatch = (context: HookContext) => {
 
 
 
-export default UserSchema;
+export default {
+  validateUser,
+  validateUserData,
+  validateUserPatch,
+  getUserSchema,
+  joiOptions,
+  joiReadOptions
+};
